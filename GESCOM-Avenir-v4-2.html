@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GESCOM Avenir</title>
+<link rel="manifest" href="data:application/json,{}">
+<style>
+  :root{
+    --bleu:#1a3c5e;
+    --bleu-clair:#2c6591;
+    --vert:#1e8a4c;
+    --rouge:#c0392b;
+    --orange:#e67e22;
+    --gris-fond:#f2f5f8;
+    --gris-bord:#d7dee5;
+    --blanc:#ffffff;
+    --texte:#22303c;
+    --texte-clair:#5a6b7a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--gris-fond);
+    color:var(--texte);
+    overscroll-behavior:none;
+  }
+  #app{display:flex; flex-direction:column; height:100vh; width:100%; overflow:hidden;}
+
+  /* ---- Header ---- */
+  .topbar{
+    background:var(--bleu); color:#fff; padding:10px 14px;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,.15); z-index:10;
+  }
+  .topbar .titre{font-size:16px; font-weight:700; letter-spacing:.3px;}
+  .topbar .sous{font-size:11px; opacity:.8; margin-top:1px;}
+  .topbar-right{display:flex; align-items:center; gap:10px;}
+  .badge-depot{
+    background:rgba(255,255,255,.15); padding:5px 10px; border-radius:14px;
+    font-size:12px; font-weight:600;
+  }
+  .btn-icon{
+    background:rgba(255,255,255,.15); border:none; color:#fff; border-radius:8px;
+    width:34px; height:34px; font-size:16px; cursor:pointer; display:flex;
+    align-items:center; justify-content:center;
+  }
+
+  /* ---- Alert banner ---- */
+  .alert-banner{
+    background:#fdecea; color:#c0392b; padding:8px 14px; font-size:13px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border-bottom:1px solid #f5c6c0; flex-shrink:0; cursor:pointer;
+  }
+  .alert-banner b{font-weight:700;}
+
+  /* ---- Main content ---- */
+  #contenu{flex:1; overflow-y:auto; padding:14px; padding-bottom:90px;}
+
+  /* ---- Bottom nav ---- */
+  .bottomnav{
+    position:fixed; bottom:0; left:0; right:0; background:#fff;
+    border-top:1px solid var(--gris-bord); display:flex; z-index:20;
+    box-shadow:0 -2px 8px rgba(0,0,0,.06);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .navbtn{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:8px 2px 6px; border:none; background:none; color:var(--texte-clair);
+    font-size:10.5px; gap:3px; cursor:pointer;
+  }
+  .navbtn.actif{color:var(--bleu); font-weight:700;}
+  .navbtn .ic{font-size:19px; line-height:1;}
+
+  /* ---- Cards / sections ---- */
+  .card{
+    background:#fff; border-radius:12px; padding:14px; margin-bottom:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06); border:1px solid #eef1f4;
+  }
+  .card-titre{font-size:14px; font-weight:700; color:var(--bleu); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+
+  .stat-box{background:var(--gris-fond); border-radius:10px; padding:12px; text-align:center;}
+  .stat-val{font-size:19px; font-weight:800; color:var(--bleu);}
+  .stat-val.vert{color:var(--vert);}
+  .stat-val.rouge{color:var(--rouge);}
+  .stat-lbl{font-size:11px; color:var(--texte-clair); margin-top:2px;}
+
+  h2.titre-page{font-size:17px; font-weight:800; color:var(--bleu); margin:2px 0 12px;}
+
+  /* ---- Forms ---- */
+  label{display:block; font-size:12.5px; font-weight:600; color:var(--texte-clair); margin:10px 0 4px;}
+  input, select, textarea{
+    width:100%; padding:10px 12px; border:1.5px solid var(--gris-bord); border-radius:8px;
+    font-size:14.5px; background:#fff; color:var(--texte); font-family:inherit;
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--bleu-clair);}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    padding:11px 16px; border-radius:9px; border:none; font-size:14.5px; font-weight:700;
+    cursor:pointer; width:100%; margin-top:12px;
+  }
+  .btn-bleu{background:var(--bleu); color:#fff;}
+  .btn-vert{background:var(--vert); color:#fff;}
+  .btn-rouge{background:var(--rouge); color:#fff;}
+  .btn-orange{background:var(--orange); color:#fff;}
+  .btn-gris{background:#e4e9ed; color:var(--texte);}
+  .btn-sm{width:auto; padding:7px 12px; font-size:12.5px; margin-top:0;}
+  .btn-row{display:flex; gap:8px; margin-top:12px;}
+  .btn-row .btn{margin-top:0;}
+
+  /* ---- Lists ---- */
+  .liste-item{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:11px 4px; border-bottom:1px solid #eef1f4;
+  }
+  .liste-item:last-child{border-bottom:none;}
+  .li-nom{font-size:14px; font-weight:700; color:var(--texte);}
+  .li-sub{font-size:12px; color:var(--texte-clair); margin-top:1px;}
+  .li-val{font-size:14px; font-weight:700; text-align:right;}
+  .li-val.vert{color:var(--vert);}
+  .li-val.rouge{color:var(--rouge);}
+  .pill{
+    display:inline-block; padding:2px 8px; border-radius:10px; font-size:10.5px; font-weight:700;
+  }
+  .pill-rouge{background:#fdecea; color:var(--rouge);}
+  .pill-vert{background:#e8f6ec; color:var(--vert);}
+  .pill-orange{background:#fdf1e4; color:var(--orange);}
+  .pill-bleu{background:#e7f0f8; color:var(--bleu);}
+
+  .vide{text-align:center; padding:30px 10px; color:var(--texte-clair); font-size:13.5px;}
+
+  .search-bar{margin-bottom:10px;}
+
+  /* ---- Modal ---- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:100;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .modal-box{
+    background:#fff; border-radius:16px 16px 0 0; width:100%; max-width:520px;
+    max-height:88vh; overflow-y:auto; padding:16px 16px calc(20px + env(safe-area-inset-bottom));
+    animation:slideup .2s ease-out;
+  }
+  @keyframes slideup{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .modal-titre{font-size:16px; font-weight:800; color:var(--bleu);}
+  .modal-close{background:none; border:none; font-size:22px; color:var(--texte-clair); cursor:pointer; padding:4px;}
+
+  .ligne-produit{
+    display:flex; align-items:center; gap:8px; background:var(--gris-fond); border-radius:8px;
+    padding:8px; margin-bottom:6px;
+  }
+  .ligne-produit .lp-nom{flex:2; font-size:13px; font-weight:600;}
+  .ligne-produit input{padding:7px 8px; font-size:13px;}
+  .ligne-produit .lp-qte{width:55px;}
+  .ligne-produit .lp-prix{width:80px;}
+  .lp-suppr{background:none; border:none; color:var(--rouge); font-size:18px; cursor:pointer; padding:4px;}
+
+  .toast{
+    position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+    background:var(--texte); color:#fff; padding:10px 18px; border-radius:20px;
+    font-size:13px; z-index:200; box-shadow:0 4px 10px rgba(0,0,0,.25);
+    animation:fadein .2s;
+  }
+  @keyframes fadein{from{opacity:0;} to{opacity:1;}}
+
+  .tab-switch{display:flex; background:var(--gris-fond); border-radius:9px; padding:3px; margin-bottom:12px;}
+  .tab-switch button{
+    flex:1; border:none; background:none; padding:9px 6px; font-size:12.5px; font-weight:700;
+    color:var(--texte-clair); border-radius:7px; cursor:pointer;
+  }
+  .tab-switch button.actif{background:#fff; color:var(--bleu); box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+  .login-screen{
+    height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:linear-gradient(160deg, var(--bleu), var(--bleu-clair)); color:#fff; padding:20px;
+  }
+  .login-logo{font-size:38px; margin-bottom:6px;}
+  .login-titre{font-size:22px; font-weight:800; margin-bottom:2px;}
+  .login-sub{font-size:12.5px; opacity:.85; margin-bottom:24px;}
+  .pin-dots{display:flex; gap:12px; margin-bottom:22px;}
+  .pin-dot{width:16px; height:16px; border-radius:50%; border:2px solid #fff; background:transparent;}
+  .pin-dot.plein{background:#fff;}
+  .pin-pad{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; width:100%; max-width:280px;}
+  .pin-key{
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:#fff;
+    border-radius:50%; aspect-ratio:1; font-size:20px; font-weight:700; cursor:pointer;
+  }
+  .pin-key:active{background:rgba(255,255,255,.3);}
+  .login-liste-users{margin-top:18px; font-size:12px; opacity:.8; text-align:center;}
+
+  .empty-icon{font-size:34px; margin-bottom:6px; opacity:.6;}
+
+  .journal-item{border-left:3px solid var(--bleu-clair); padding:6px 10px; margin-bottom:8px; font-size:12.5px;}
+  .journal-date{color:var(--texte-clair); font-size:11px;}
+
+  ::-webkit-scrollbar{width:0; height:0;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script id="app-script">
+/* === GESCOM AVENIR — logique applicative === */
+
+/* ---------- Utilitaires ---------- */
+const LS_PREFIX = "gescom_";
+function lsGet(key, def){
+  try{ const v = localStorage.getItem(LS_PREFIX+key); return v ? JSON.parse(v) : def; }
+  catch(e){ return def; }
+}
+function lsSet(key, val){ localStorage.setItem(LS_PREFIX+key, JSON.stringify(val)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function fcfa(n){
+  n = Math.round(Number(n)||0);
+  return n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ') + " FCFA";
+}
+function dateAuj(){ return new Date().toISOString().slice(0,10); }
+function dateAffiche(iso){
+  if(!iso) return "";
+  const d = new Date(iso+"T00:00:00");
+  const jours = ["dim","lun","mar","mer","jeu","ven","sam"];
+  const mois = ["jan","fév","mar","avr","mai","juin","juil","aoû","sep","oct","nov","déc"];
+  return jours[d.getDay()]+" "+d.getDate()+" "+mois[d.getMonth()];
+}
+function heureMaintenant(){
+  const d = new Date();
+  return d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0');
+}
+function toast(msg){
+  const root = document.getElementById('toast-root');
+  root.innerHTML = '<div class="toast">'+msg+'</div>';
+  setTimeout(()=>{ root.innerHTML=''; }, 2200);
+}
+function esc(s){
+  return (s||"").toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- État global en mémoire (synchronisé avec localStorage) ---------- */
+const DB = {
+  get depots(){ return lsGet('depots', []); },
+  set depots(v){ lsSet('depots', v); },
+  get articles(){ return lsGet('articles', []); },
+  set articles(v){ lsSet('articles', v); },
+  get tiers(){ return lsGet('tiers', []); },
+  set tiers(v){ lsSet('tiers', v); },
+  get achats(){ return lsGet('achats', []); },
+  set achats(v){ lsSet('achats', v); },
+  get ventes(){ return lsGet('ventes', []); },
+  set ventes(v){ lsSet('ventes', v); },
+  get transferts(){ return lsGet('transferts', []); },
+  set transferts(v){ lsSet('transferts', v); },
+  get caisse(){ return lsGet('caisse', []); },
+  set caisse(v){ lsSet('caisse', v); },
+  get users(){ return lsGet('users', []); },
+  set users(v){ lsSet('users', v); },
+  get journal(){ return lsGet('journal', []); },
+  set journal(v){ lsSet('journal', v); },
+  get reglements(){ return lsGet('reglements', []); },
+  set reglements(v){ lsSet('reglements', v); },
+  get retours(){ return lsGet('retours', []); },
+  set retours(v){ lsSet('retours', v); },
+  get avances(){ return lsGet('avances', []); },
+  set avances(v){ lsSet('avances', v); },
+  get avancesUtilisees(){ return lsGet('avancesUtilisees', []); },
+  set avancesUtilisees(v){ lsSet('avancesUtilisees', v); },
+  get devis(){ return lsGet('devis', []); },
+  set devis(v){ lsSet('devis', v); },
+  get params(){ return lsGet('params', {nomEntreprise:"Mon Entreprise", devise:"FCFA"}); },
+  set params(v){ lsSet('params', v); },
+};
+
+function ajouterJournal(action){
+  const j = DB.journal;
+  j.unshift({id:uid(), date:dateAuj(), heure:heureMaintenant(), utilisateur:(SESSION.user?SESSION.user.nom:"?"), action});
+  if(j.length>500) j.length = 500;
+  DB.journal = j;
+}
+
+/* ---------- Session ---------- */
+const SESSION = { user:null, depotActif:null };
+
+/* ---------- Initialisation des données de base si vide ---------- */
+function initDonneesBase(){
+  if(DB.users.length===0){
+    DB.users = [{id:uid(), pin:"1234", nom:"Administrateur", role:"admin"}];
+  }
+  if(DB.depots.length===0){
+    DB.depots = [{id:uid(), nom:"Dépôt principal"}];
+  }
+}
+
+/* ---------- Calcul du stock / PAMP par article et dépôt ---------- */
+// article.stocks = { [depotId]: { qte: number, pamp: number } }
+function getStockDepot(article, depotId){
+  return (article.stocks && article.stocks[depotId]) ? article.stocks[depotId] : {qte:0, pamp:0};
+}
+function getStockTotal(article){
+  if(!article.stocks) return {qte:0, valeur:0};
+  let qte=0, valeur=0;
+  Object.values(article.stocks).forEach(s=>{ qte+=s.qte; valeur += s.qte*s.pamp; });
+  return {qte, valeur};
+}
+function appliquerEntreeStock(article, depotId, qteEntree, prixUnitaire){
+  if(!article.stocks) article.stocks = {};
+  const actuel = article.stocks[depotId] || {qte:0, pamp:0};
+  const nouvelleQte = actuel.qte + qteEntree;
+  const nouveauPamp = nouvelleQte>0
+    ? ((actuel.qte*actuel.pamp) + (qteEntree*prixUnitaire)) / nouvelleQte
+    : 0;
+  article.stocks[depotId] = {qte:nouvelleQte, pamp: Math.round(nouveauPamp*100)/100};
+}
+function appliquerSortieStock(article, depotId, qteSortie){
+  if(!article.stocks) article.stocks = {};
+  const actuel = article.stocks[depotId] || {qte:0, pamp:0};
+  const nouvelleQte = Math.max(0, actuel.qte - qteSortie);
+  article.stocks[depotId] = {qte:nouvelleQte, pamp: actuel.pamp}; // PAMP inchangé à la sortie
+}
+
+/* ---------- Recherche d'entités ---------- */
+function trouverArticle(id){ return DB.articles.find(a=>a.id===id); }
+function trouverTiers(id){ return DB.tiers.find(t=>t.id===id); }
+function trouverDepot(id){ return DB.depots.find(d=>d.id===id); }
+function nomDepot(id){ const d=trouverDepot(id); return d?d.nom:"—"; }
+function nomTiers(id){ const t=trouverTiers(id); return t?t.nom:"—"; }
+
+/* ---------- Articles sous stock minimum ---------- */
+function articlesAlerte(){
+  return DB.articles.filter(a=>{
+    const {qte} = getStockTotal(a);
+    return (a.stockMin!=null && a.stockMin>0) && qte <= a.stockMin;
+  });
+}
+
+/* ================= ECRAN DE CONNEXION (PIN) ================= */
+let pinSaisi = "";
+function renderLogin(){
+  pinSaisi = "";
+  const users = DB.users;
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="login-screen">
+      <div class="login-logo">🏬</div>
+      <div class="login-titre">GESCOM Avenir</div>
+      <div class="login-sub">Gestion commerciale hors-ligne — ${esc(DB.params.nomEntreprise)}</div>
+      <div class="pin-dots" id="pin-dots"></div>
+      <div class="pin-pad">
+        ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="pin-key" onclick="pinAjouter('${n}')">${n}</button>`).join('')}
+        <button class="pin-key" onclick="pinEffacer()">⌫</button>
+        <button class="pin-key" onclick="pinAjouter('0')">0</button>
+        <div></div>
+      </div>
+      <div class="login-liste-users">${users.length} utilisateur(s) enregistré(s) · PIN à 4 chiffres</div>
+    </div>
+  `;
+  dessinerPinDots();
+}
+function dessinerPinDots(){
+  const el = document.getElementById('pin-dots');
+  if(!el) return;
+  el.innerHTML = [0,1,2,3].map(i=>`<div class="pin-dot ${i<pinSaisi.length?'plein':''}"></div>`).join('');
+}
+function pinAjouter(chiffre){
+  if(pinSaisi.length>=4) return;
+  pinSaisi += chiffre;
+  dessinerPinDots();
+  if(pinSaisi.length===4){
+    setTimeout(()=>verifierPin(), 150);
+  }
+}
+function pinEffacer(){
+  pinSaisi = pinSaisi.slice(0,-1);
+  dessinerPinDots();
+}
+function verifierPin(){
+  const user = DB.users.find(u=>u.pin===pinSaisi);
+  if(user){
+    SESSION.user = user;
+    SESSION.depotActif = DB.depots[0] ? DB.depots[0].id : null;
+    ajouterJournal("Connexion");
+    renderApp();
+  }else{
+    toast("PIN incorrect");
+    pinSaisi = "";
+    dessinerPinDots();
+  }
+}
+function deconnexion(){
+  ajouterJournal("Déconnexion");
+  SESSION.user = null;
+  renderLogin();
+}
+
+/* ================= STRUCTURE PRINCIPALE (après connexion) ================= */
+let ongletActif = "accueil";
+const ONGLETS = [
+  {id:"accueil", icone:"🏠", label:"Accueil"},
+  {id:"stock", icone:"📦", label:"Stock"},
+  {id:"achats", icone:"🛒", label:"Achats"},
+  {id:"ventes", icone:"💰", label:"Ventes"},
+  {id:"caisse", icone:"🧾", label:"Caisse"},
+  {id:"plus", icone:"☰", label:"Plus"},
+];
+
+function renderApp(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="topbar">
+      <div>
+        <div class="titre">${esc(DB.params.nomEntreprise)}</div>
+        <div class="sous">👤 ${esc(SESSION.user.nom)}</div>
+      </div>
+      <div class="topbar-right">
+        <div class="badge-depot" onclick="ouvrirSelectDepot()">📍 ${esc(nomDepot(SESSION.depotActif))} ▾</div>
+        <button class="btn-icon" onclick="deconnexion()">⏻</button>
+      </div>
+    </div>
+    <div id="alerte-zone"></div>
+    <div id="contenu"></div>
+    <div class="bottomnav" id="bottomnav"></div>
+  `;
+  dessinerAlerte();
+  dessinerNav();
+  naviguer(ongletActif);
+}
+function dessinerAlerte(){
+  const zone = document.getElementById('alerte-zone');
+  const alertes = articlesAlerte();
+  if(alertes.length===0){ zone.innerHTML=""; return; }
+  zone.innerHTML = `
+    <div class="alert-banner" onclick="naviguer('stock')">
+      <span>⚠️ <b>${alertes.length}</b> article(s) en stock minimum atteint</span>
+      <span>Voir →</span>
+    </div>
+  `;
+}
+function dessinerNav(){
+  const nav = document.getElementById('bottomnav');
+  nav.innerHTML = ONGLETS.map(o=>`
+    <button class="navbtn ${o.id===ongletActif?'actif':''}" onclick="naviguer('${o.id}')">
+      <span class="ic">${o.icone}</span><span>${o.label}</span>
+    </button>
+  `).join('');
+}
+function naviguer(id){
+  ongletActif = id;
+  dessinerNav();
+  dessinerAlerte();
+  const c = document.getElementById('contenu');
+  c.scrollTop = 0;
+  switch(id){
+    case "accueil": renderAccueil(c); break;
+    case "stock": renderStock(c); break;
+    case "achats": renderAchats(c); break;
+    case "ventes": renderVentes(c); break;
+    case "caisse": renderCaisse(c); break;
+    case "plus": renderPlus(c); break;
+    case "tiers": renderTiers(c); break;
+    case "transferts": renderTransferts(c); break;
+    case "creances": renderCreances(c); break;
+    case "avances": renderAvances(c); break;
+    case "devis": renderDevisEcran(c); break;
+    case "etats": renderEtats(c); break;
+    case "parametres": renderParametres(c); break;
+    case "journal": renderJournalEcran(c); break;
+    default: c.innerHTML = "";
+  }
+}
+function ouvrirSelectDepot(){
+  const depots = DB.depots;
+  ouvrirModal("Choisir le dépôt actif", `
+    <div>
+      ${depots.map(d=>`
+        <div class="liste-item" style="cursor:pointer" onclick="choisirDepot('${d.id}')">
+          <div class="li-nom">📍 ${esc(d.nom)}</div>
+          ${d.id===SESSION.depotActif?'<span class="pill pill-bleu">Actif</span>':''}
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+function choisirDepot(id){
+  SESSION.depotActif = id;
+  fermerModal();
+  renderApp();
+  toast("Dépôt actif : "+nomDepot(id));
+}
+
+/* ================= MODAL GENERIQUE ================= */
+function ouvrirModal(titre, contenuHtml){
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) fermerModal()">
+      <div class="modal-box">
+        <div class="modal-head">
+          <div class="modal-titre">${esc(titre)}</div>
+          <button class="modal-close" onclick="fermerModal()">✕</button>
+        </div>
+        ${contenuHtml}
+      </div>
+    </div>
+  `;
+}
+function fermerModal(){
+  document.getElementById('modal-root').innerHTML = "";
+}
+
+/* ================= ECRAN ACCUEIL ================= */
+function renderAccueil(c){
+  const articles = DB.articles;
+  const {valeurStockTotal} = (()=>{ let v=0; articles.forEach(a=>v+=getStockTotal(a).valeur); return {valeurStockTotal:v}; })();
+  const aujourdhui = dateAuj();
+  const ventesAuj = DB.ventes.filter(v=>v.date===aujourdhui);
+  const totalVentesAuj = ventesAuj.reduce((s,v)=>s+v.total,0);
+  const soldeCaisse = calculerSoldeCaisse();
+  const alertes = articlesAlerte();
+
+  c.innerHTML = `
+    <h2 class="titre-page">Tableau de bord</h2>
+    <div class="grid2">
+      <div class="stat-box"><div class="stat-val vert">${fcfa(totalVentesAuj)}</div><div class="stat-lbl">Ventes aujourd'hui</div></div>
+      <div class="stat-box"><div class="stat-val">${fcfa(valeurStockTotal)}</div><div class="stat-lbl">Valeur du stock</div></div>
+      <div class="stat-box"><div class="stat-val ${soldeCaisse.total<0?'rouge':''}">${fcfa(soldeCaisse.total)}</div><div class="stat-lbl">Solde caisse total</div></div>
+      <div class="stat-box"><div class="stat-val ${alertes.length>0?'rouge':''}">${alertes.length}</div><div class="stat-lbl">Alertes stock</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-titre">💵 Détail caisse</div>
+      ${CANAUX_CAISSE.map(ch=>`<div class="liste-item"><div class="li-nom">${ch.label}</div><div class="li-val">${fcfa(soldeCaisse[ch.id])}</div></div>`).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-titre">Actions rapides</div>
+      <div class="grid2">
+        <button class="btn btn-vert" onclick="naviguer('ventes')">💰 Nouvelle vente</button>
+        <button class="btn btn-bleu" onclick="naviguer('achats')">🛒 Nouvel achat</button>
+      </div>
+      <div class="grid2">
+        <button class="btn btn-orange" onclick="naviguer('caisse')">🧾 Mouvement caisse</button>
+        <button class="btn btn-gris" onclick="naviguer('transferts')">🔁 Transfert dépôt</button>
+      </div>
+    </div>
+
+    ${alertes.length>0?`
+    <div class="card">
+      <div class="card-titre">⚠️ Articles en alerte stock</div>
+      ${alertes.slice(0,5).map(a=>`
+        <div class="liste-item">
+          <div><div class="li-nom">${esc(a.designation)}</div><div class="li-sub">Min: ${a.stockMin}</div></div>
+          <div class="li-val rouge">${getStockTotal(a).qte}</div>
+        </div>
+      `).join('')}
+    </div>` : ''}
+  `;
+}
+function calculerSoldeCaisse(){
+  const soldes = {};
+  CANAUX_CAISSE.forEach(ch=>soldes[ch.id]=0);
+  DB.caisse.forEach(m=>{
+    const signe = m.type==='entree' ? 1 : -1;
+    if(soldes[m.mode]!==undefined) soldes[m.mode] += signe*m.montant;
+  });
+  const total = Object.values(soldes).reduce((s,v)=>s+v,0);
+  return {...soldes, especes:soldes.especes, orange:soldes.orange_money, moov:soldes.moov_money, total};
+}
+
+/* ================= ECRAN STOCK ================= */
+let stockRecherche = "";
+let stockVueDepot = "tous"; // 'tous' ou id de dépôt
+function renderStock(c){
+  const articles = DB.articles.filter(a=>{
+    if(!stockRecherche) return true;
+    const s = stockRecherche.toLowerCase();
+    return a.designation.toLowerCase().includes(s) || (a.code||'').toLowerCase().includes(s);
+  });
+  const depots = DB.depots;
+
+  c.innerHTML = `
+    <h2 class="titre-page">Stock (${DB.articles.length} articles)</h2>
+    <input class="search-bar" placeholder="🔎 Rechercher un article..." value="${esc(stockRecherche)}"
+      oninput="stockRecherche=this.value; naviguer('stock')">
+
+    <div class="tab-switch" id="tab-depots">
+      <button class="${stockVueDepot==='tous'?'actif':''}" onclick="stockVueDepot='tous'; naviguer('stock')">Tous dépôts</button>
+      ${depots.map(d=>`<button class="${stockVueDepot===d.id?'actif':''}" onclick="stockVueDepot='${d.id}'; naviguer('stock')">${esc(d.nom)}</button>`).join('')}
+    </div>
+
+    <button class="btn btn-bleu" onclick="ouvrirFormArticle()">➕ Nouvel article</button>
+
+    <div class="card" style="margin-top:12px;">
+      ${articles.length===0 ? `<div class="vide"><div class="empty-icon">📦</div>Aucun article. Ajoutez-en un.</div>` :
+        articles.map(a=>{
+          let qte, pamp, valeur;
+          if(stockVueDepot==='tous'){
+            const t = getStockTotal(a); qte=t.qte; valeur=t.valeur;
+            pamp = qte>0 ? valeur/qte : 0;
+          } else {
+            const s = getStockDepot(a, stockVueDepot); qte=s.qte; pamp=s.pamp; valeur=qte*pamp;
+          }
+          const enAlerte = a.stockMin && qte<=a.stockMin;
+          return `
+          <div class="liste-item" style="cursor:pointer" onclick="ouvrirFormArticle('${a.id}')">
+            <div>
+              <div class="li-nom">${esc(a.designation)} ${enAlerte?'<span class="pill pill-rouge">Stock bas</span>':''}</div>
+              <div class="li-sub">Code: ${esc(a.code||'—')} · PAMP: ${fcfa(pamp)} · Vente: ${fcfa(a.prixVente)}</div>
+            </div>
+            <div class="li-val ${enAlerte?'rouge':''}">${qte}</div>
+          </div>`;
+        }).join('')
+      }
+    </div>
+  `;
+}
+function ouvrirFormArticle(id){
+  const a = id ? trouverArticle(id) : null;
+  ouvrirModal(a?"Modifier l'article":"Nouvel article", `
+    <div>
+      <label>Désignation *</label>
+      <input id="f-designation" value="${a?esc(a.designation):''}" placeholder="Ex: Fer à béton de 10">
+      <label>Code article (optionnel)</label>
+      <input id="f-code" value="${a?esc(a.code||''):''}" placeholder="Ex: FER10">
+      <div class="grid2">
+        <div><label>Prix d'achat (FCFA)</label><input id="f-prixachat" type="number" value="${a?a.prixAchat:''}"></div>
+        <div><label>Prix de vente (FCFA) *</label><input id="f-prixvente" type="number" value="${a?a.prixVente:''}"></div>
+      </div>
+      <label>Stock minimum (alerte)</label>
+      <input id="f-stockmin" type="number" value="${a?a.stockMin:''}" placeholder="Ex: 5">
+      ${!a?`
+      <label>Stock initial (dans le dépôt actif : ${esc(nomDepot(SESSION.depotActif))})</label>
+      <input id="f-stockinit" type="number" value="0">
+      `:''}
+      <div class="btn-row">
+        ${a?`<button class="btn btn-rouge" onclick="supprimerArticle('${a.id}')">Supprimer</button>`:''}
+        <button class="btn btn-vert" onclick="enregistrerArticle(${a?`'${a.id}'`:'null'})">Enregistrer</button>
+      </div>
+    </div>
+  `);
+}
+function enregistrerArticle(id){
+  const designation = document.getElementById('f-designation').value.trim();
+  const code = document.getElementById('f-code').value.trim();
+  const prixAchat = Number(document.getElementById('f-prixachat').value)||0;
+  const prixVente = Number(document.getElementById('f-prixvente').value)||0;
+  const stockMin = Number(document.getElementById('f-stockmin').value)||0;
+  if(!designation){ toast("La désignation est obligatoire"); return; }
+  if(!prixVente){ toast("Le prix de vente est obligatoire"); return; }
+
+  let articles = DB.articles;
+  if(id){
+    const a = articles.find(x=>x.id===id);
+    a.designation=designation; a.code=code; a.prixAchat=prixAchat; a.prixVente=prixVente; a.stockMin=stockMin;
+    ajouterJournal("Modification article: "+designation);
+  } else {
+    const stockInit = Number(document.getElementById('f-stockinit').value)||0;
+    const nouvel = {id:uid(), designation, code, prixAchat, prixVente, stockMin, stocks:{}};
+    if(stockInit>0){ appliquerEntreeStock(nouvel, SESSION.depotActif, stockInit, prixAchat); }
+    articles.push(nouvel);
+    ajouterJournal("Création article: "+designation);
+  }
+  DB.articles = articles;
+  fermerModal();
+  naviguer('stock');
+  toast("Article enregistré");
+}
+function supprimerArticle(id){
+  DB.articles = DB.articles.filter(a=>a.id!==id);
+  ajouterJournal("Suppression d'un article");
+  fermerModal();
+  naviguer('stock');
+  toast("Article supprimé");
+}
+
+/* ================= ECRAN TIERS (clients / fournisseurs) ================= */
+let tiersVue = "client";
+function renderTiers(c){
+  const liste = DB.tiers.filter(t=>t.type===tiersVue);
+  c.innerHTML = `
+    <h2 class="titre-page">Clients & Fournisseurs</h2>
+    <div class="tab-switch">
+      <button class="${tiersVue==='client'?'actif':''}" onclick="tiersVue='client'; naviguer('tiers')">Clients</button>
+      <button class="${tiersVue==='fournisseur'?'actif':''}" onclick="tiersVue='fournisseur'; naviguer('tiers')">Fournisseurs</button>
+    </div>
+    <button class="btn btn-bleu" onclick="ouvrirFormTiers()">➕ Ajouter ${tiersVue==='client'?'un client':'un fournisseur'}</button>
+    <div class="card" style="margin-top:12px;">
+      ${liste.length===0?`<div class="vide"><div class="empty-icon">👥</div>Aucun ${tiersVue} enregistré.</div>`:
+        liste.map(t=>{
+          const ca = tiersVue==='client'
+            ? DB.ventes.filter(v=>v.clientId===t.id).reduce((s,v)=>s+v.total,0)
+            : DB.achats.filter(x=>x.fournisseurId===t.id).reduce((s,x)=>s+x.total,0);
+          return `
+          <div class="liste-item" style="cursor:pointer" onclick="ouvrirFormTiers('${t.id}')">
+            <div><div class="li-nom">${esc(t.nom)}</div><div class="li-sub">📞 ${esc(t.tel||'—')}</div></div>
+            <div class="li-val">${fcfa(ca)}</div>
+          </div>`;
+        }).join('')
+      }
+    </div>
+  `;
+}
+function ouvrirFormTiers(id){
+  const t = id ? trouverTiers(id) : null;
+  ouvrirModal(t?"Modifier":(tiersVue==='client'?"Nouveau client":"Nouveau fournisseur"), `
+    <div>
+      <label>Nom / Raison sociale *</label>
+      <input id="ft-nom" value="${t?esc(t.nom):''}">
+      <label>Téléphone</label>
+      <input id="ft-tel" value="${t?esc(t.tel||''):''}">
+      <label>Adresse / Quartier</label>
+      <input id="ft-adresse" value="${t?esc(t.adresse||''):''}">
+      <div class="btn-row">
+        ${t?`<button class="btn btn-rouge" onclick="supprimerTiers('${t.id}')">Supprimer</button>`:''}
+        <button class="btn btn-vert" onclick="enregistrerTiers(${t?`'${t.id}'`:'null'})">Enregistrer</button>
+      </div>
+    </div>
+  `);
+}
+function enregistrerTiers(id){
+  const nom = document.getElementById('ft-nom').value.trim();
+  const tel = document.getElementById('ft-tel').value.trim();
+  const adresse = document.getElementById('ft-adresse').value.trim();
+  if(!nom){ toast("Le nom est obligatoire"); return; }
+  let tiers = DB.tiers;
+  if(id){
+    const t = tiers.find(x=>x.id===id);
+    t.nom=nom; t.tel=tel; t.adresse=adresse;
+  } else {
+    tiers.push({id:uid(), type:tiersVue, nom, tel, adresse});
+  }
+  DB.tiers = tiers;
+  ajouterJournal((id?"Modification":"Création")+" "+tiersVue+": "+nom);
+  fermerModal();
+  naviguer('tiers');
+  toast("Enregistré");
+}
+function supprimerTiers(id){
+  DB.tiers = DB.tiers.filter(t=>t.id!==id);
+  fermerModal();
+  naviguer('tiers');
+  toast("Supprimé");
+}
+
+/* ================= ACHATS ================= */
+let panierAchat = []; // {articleId, qte, prixUnitaire}
+function renderAchats(c){
+  const achats = [...DB.achats].sort((a,b)=> (b.date+b.heure).localeCompare(a.date+a.heure));
+  c.innerHTML = `
+    <h2 class="titre-page">Achats</h2>
+    <button class="btn btn-bleu" onclick="ouvrirNouvelAchat()">➕ Nouvel achat</button>
+    <div class="card" style="margin-top:12px;">
+      ${achats.length===0?`<div class="vide"><div class="empty-icon">🛒</div>Aucun achat enregistré.</div>`:
+        achats.map(x=>`
+        <div class="liste-item">
+          <div>
+            <div class="li-nom">${esc(nomTiers(x.fournisseurId))}</div>
+            <div class="li-sub">${dateAffiche(x.date)} · ${esc(nomDepot(x.depotId))} · ${x.lignes.length} article(s)</div>
+          </div>
+          <div class="li-val rouge">${fcfa(x.total)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function ouvrirNouvelAchat(){
+  panierAchat = [];
+  dessinerModalAchat();
+}
+function dessinerModalAchat(){
+  const fournisseurs = DB.tiers.filter(t=>t.type==='fournisseur');
+  const articles = DB.articles;
+  const total = panierAchat.reduce((s,l)=>s+l.qte*l.prixUnitaire,0);
+  ouvrirModal("Nouvel achat", `
+    <div>
+      <label>Fournisseur</label>
+      <select id="ach-fournisseur">
+        <option value="">— Aucun / divers —</option>
+        ${fournisseurs.map(f=>`<option value="${f.id}">${esc(f.nom)}</option>`).join('')}
+      </select>
+      <label>Dépôt de réception</label>
+      <select id="ach-depot">
+        ${DB.depots.map(d=>`<option value="${d.id}" ${d.id===SESSION.depotActif?'selected':''}>${esc(d.nom)}</option>`).join('')}
+      </select>
+
+      <label>Ajouter un article</label>
+      <select id="ach-select-article" onchange="ajouterLigneAchat()">
+        <option value="">— Choisir un article —</option>
+        ${articles.map(a=>`<option value="${a.id}">${esc(a.designation)}</option>`).join('')}
+      </select>
+
+      <div id="ach-lignes" style="margin-top:10px;">
+        ${panierAchat.map((l,i)=>{
+          const a = trouverArticle(l.articleId);
+          return `
+          <div class="ligne-produit">
+            <div class="lp-nom">${esc(a.designation)}</div>
+            <input class="lp-qte" type="number" value="${l.qte}" onchange="maj_qte_achat(${i}, this.value)" placeholder="Qté">
+            <input class="lp-prix" type="number" value="${l.prixUnitaire}" onchange="maj_prix_achat(${i}, this.value)" placeholder="Prix U.">
+            <button class="lp-suppr" onclick="suppr_ligne_achat(${i})">✕</button>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="card" style="margin-top:10px; background:var(--gris-fond)">
+        <div class="liste-item"><div class="li-nom">Total achat</div><div class="li-val">${fcfa(total)}</div></div>
+      </div>
+      <button class="btn btn-vert" onclick="validerAchat()">✅ Valider l'achat</button>
+    </div>
+  `);
+}
+function ajouterLigneAchat(){
+  const sel = document.getElementById('ach-select-article');
+  const id = sel.value;
+  if(!id) return;
+  const a = trouverArticle(id);
+  if(panierAchat.find(l=>l.articleId===id)){ toast("Déjà dans la liste"); sel.value=""; return; }
+  panierAchat.push({articleId:id, qte:1, prixUnitaire:a.prixAchat||0});
+  sel.value="";
+  dessinerModalAchat();
+}
+function maj_qte_achat(i,v){ panierAchat[i].qte = Number(v)||0; dessinerModalAchat(); }
+function maj_prix_achat(i,v){ panierAchat[i].prixUnitaire = Number(v)||0; dessinerModalAchat(); }
+function suppr_ligne_achat(i){ panierAchat.splice(i,1); dessinerModalAchat(); }
+function validerAchat(){
+  if(panierAchat.length===0){ toast("Ajoutez au moins un article"); return; }
+  const fournisseurId = document.getElementById('ach-fournisseur').value || null;
+  const depotId = document.getElementById('ach-depot').value;
+  const total = panierAchat.reduce((s,l)=>s+l.qte*l.prixUnitaire,0);
+
+  let articles = DB.articles;
+  panierAchat.forEach(l=>{
+    const a = articles.find(x=>x.id===l.articleId);
+    appliquerEntreeStock(a, depotId, l.qte, l.prixUnitaire);
+  });
+  DB.articles = articles;
+
+  const achat = {id:uid(), date:dateAuj(), heure:heureMaintenant(), fournisseurId, depotId, lignes:JSON.parse(JSON.stringify(panierAchat)), total};
+  DB.achats = [...DB.achats, achat];
+  ajouterJournal("Achat enregistré: "+fcfa(total));
+  fermerModal();
+  panierAchat = [];
+  naviguer('achats');
+  toast("Achat enregistré, stock mis à jour");
+}
+
+/* ================= VENTES ================= */
+let panierVente = [];
+function renderVentes(c){
+  const ventes = [...DB.ventes].sort((a,b)=> (b.date+b.heure).localeCompare(a.date+a.heure));
+  c.innerHTML = `
+    <h2 class="titre-page">Ventes</h2>
+    <button class="btn btn-vert" onclick="ouvrirNouvelleVente()">➕ Nouvelle vente</button>
+    <div class="card" style="margin-top:12px;">
+      ${ventes.length===0?`<div class="vide"><div class="empty-icon">💰</div>Aucune vente enregistrée.</div>`:
+        ventes.map(v=>{
+          const retourne = montantRetourVente(v.id);
+          return `
+        <div class="liste-item">
+          <div style="flex:1">
+            <div class="li-nom">${v.clientId?esc(nomTiers(v.clientId)):'Client comptoir'}</div>
+            <div class="li-sub">${dateAffiche(v.date)} · ${esc(nomDepot(v.depotId))} · ${labelMode(v.modePaiement)}${retourne>0?' · retour: '+fcfa(retourne):''}</div>
+            <div class="btn-row" style="margin-top:6px;">
+              <button class="btn btn-sm btn-gris" onclick="ouvrirRecu('${v.id}')">🧾 Reçu</button>
+              <button class="btn btn-sm btn-orange" onclick="ouvrirRetourVente('${v.id}')">↩️ Retour</button>
+            </div>
+          </div>
+          <div class="li-val vert">${fcfa(v.total)}</div>
+        </div>
+      `;}).join('')}
+    </div>
+  `;
+}
+function labelMode(m){
+  return {especes:"💵 Espèces", orange_money:"🟠 Orange Money", moov_money:"🔵 Moov Money", cheque:"📄 Chèque", virement:"🏦 Virement", credit:"📝 Crédit", avance:"🏦 Avance client"}[m] || m;
+}
+const CANAUX_CAISSE = [
+  {id:"especes", label:"💵 Espèces"},
+  {id:"orange_money", label:"🟠 Orange Money"},
+  {id:"moov_money", label:"🔵 Moov Money"},
+  {id:"cheque", label:"📄 Chèque"},
+  {id:"virement", label:"🏦 Virement"},
+];
+function optionsMoyensPaiement(inclureCredit){
+  let html = CANAUX_CAISSE.map(ch=>`<option value="${ch.id}">${ch.label}</option>`).join('');
+  if(inclureCredit) html += `<option value="credit">📝 Crédit (impayé)</option>`;
+  return html;
+}
+function optionsMoyensPaiementVente(){
+  return optionsMoyensPaiement(true) + `<option value="avance">🏦 Avance client (solde déjà versé)</option>`;
+}
+function ouvrirNouvelleVente(){
+  panierVente = [];
+  dessinerModalVente();
+}
+function dessinerModalVente(){
+  const clients = DB.tiers.filter(t=>t.type==='client');
+  const articles = DB.articles;
+  const total = panierVente.reduce((s,l)=>s+l.qte*l.prixUnitaire,0);
+  ouvrirModal("Nouvelle vente", `
+    <div>
+      <label>Client</label>
+      <select id="vte-client">
+        <option value="">— Client comptoir —</option>
+        ${clients.map(cl=>`<option value="${cl.id}">${esc(cl.nom)}</option>`).join('')}
+      </select>
+      <label>Dépôt de sortie</label>
+      <select id="vte-depot">
+        ${DB.depots.map(d=>`<option value="${d.id}" ${d.id===SESSION.depotActif?'selected':''}>${esc(d.nom)}</option>`).join('')}
+      </select>
+
+      <label>Ajouter un article</label>
+      <select id="vte-select-article" onchange="ajouterLigneVente()">
+        <option value="">— Choisir un article —</option>
+        ${articles.map(a=>{
+          const depotSel = document.getElementById('vte-depot');
+          const dId = depotSel ? depotSel.value : SESSION.depotActif;
+          const stk = getStockDepot(a, dId);
+          return `<option value="${a.id}">${esc(a.designation)} (dispo: ${stk.qte})</option>`;
+        }).join('')}
+      </select>
+
+      <div id="vte-lignes" style="margin-top:10px;">
+        ${panierVente.map((l,i)=>{
+          const estExterne = !l.articleId;
+          const nom = estExterne ? l.designationLibre : trouverArticle(l.articleId).designation;
+          return `
+          <div class="ligne-produit" style="flex-wrap:wrap;">
+            <div class="lp-nom">${esc(nom)} ${estExterne?`<span class="pill pill-orange">Hors stock${l.fournisseur?' · '+esc(l.fournisseur):''}</span>`:''}</div>
+            <input class="lp-qte" type="number" value="${l.qte}" onchange="maj_qte_vente(${i}, this.value)" placeholder="Qté">
+            <input class="lp-prix" type="number" value="${l.prixUnitaire}" onchange="maj_prix_vente(${i}, this.value)" placeholder="Prix U.">
+            <button class="lp-suppr" onclick="suppr_ligne_vente(${i})">✕</button>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="card" style="margin-top:10px; background:var(--gris-fond)">
+        <div class="card-titre" style="margin-bottom:6px;">📦 Article hors stock (fourni par une autre boutique)</div>
+        <label>Désignation</label>
+        <input id="vte-ext-nom" placeholder="Ex: Briques 15x20">
+        <label>Fournisseur / origine</label>
+        <input id="vte-ext-fournisseur" placeholder="Ex: Boutique du patron">
+        <div class="grid2">
+          <div><label>Quantité</label><input id="vte-ext-qte" type="number" value="1"></div>
+          <div><label>Prix unitaire</label><input id="vte-ext-prix" type="number" placeholder="0"></div>
+        </div>
+        <button class="btn btn-orange btn-sm" style="width:100%; margin-top:10px;" onclick="ajouterLigneExterneVente()">➕ Ajouter cet article</button>
+      </div>
+
+      <label>Mode de paiement</label>
+      <select id="vte-mode">
+        ${optionsMoyensPaiementVente()}
+      </select>
+      <div id="vte-solde-avance-info" style="font-size:12px; color:var(--texte-clair); margin-top:4px;"></div>
+
+      <div class="card" style="margin-top:10px; background:var(--gris-fond)">
+        <div class="liste-item"><div class="li-nom">Total vente</div><div class="li-val vert">${fcfa(total)}</div></div>
+      </div>
+      <button class="btn btn-vert" onclick="validerVente()">✅ Valider la vente</button>
+    </div>
+  `);
+  const clSel = document.getElementById('vte-client');
+  const modeSel = document.getElementById('vte-mode');
+  const infoZone = document.getElementById('vte-solde-avance-info');
+  function majInfoAvance(){
+    if(modeSel.value==='avance' && clSel.value){
+      infoZone.textContent = "Solde avance disponible: " + fcfa(soldeAvanceClient(clSel.value));
+    } else { infoZone.textContent = ""; }
+  }
+  if(clSel && modeSel){
+    clSel.addEventListener('change', majInfoAvance);
+    modeSel.addEventListener('change', majInfoAvance);
+    majInfoAvance();
+  }
+}
+function ajouterLigneExterneVente(){
+  const nom = document.getElementById('vte-ext-nom').value.trim();
+  const fournisseur = document.getElementById('vte-ext-fournisseur').value.trim();
+  const qte = Number(document.getElementById('vte-ext-qte').value)||0;
+  const prix = Number(document.getElementById('vte-ext-prix').value)||0;
+  if(!nom){ toast("Indiquez une désignation"); return; }
+  if(qte<=0){ toast("Quantité invalide"); return; }
+  panierVente.push({articleId:null, designationLibre:nom, fournisseur, qte, prixUnitaire:prix, origine:'externe'});
+  dessinerModalVente();
+}
+function ajouterLigneVente(){
+  const sel = document.getElementById('vte-select-article');
+  const id = sel.value;
+  if(!id) return;
+  const a = trouverArticle(id);
+  if(panierVente.find(l=>l.articleId===id)){ toast("Déjà dans la liste"); sel.value=""; return; }
+  panierVente.push({articleId:id, qte:1, prixUnitaire:a.prixVente||0});
+  sel.value="";
+  dessinerModalVente();
+}
+function maj_qte_vente(i,v){ panierVente[i].qte = Number(v)||0; dessinerModalVente(); }
+function maj_prix_vente(i,v){ panierVente[i].prixUnitaire = Number(v)||0; dessinerModalVente(); }
+function suppr_ligne_vente(i){ panierVente.splice(i,1); dessinerModalVente(); }
+function validerVente(){
+  if(panierVente.length===0){ toast("Ajoutez au moins un article"); return; }
+  const depotId = document.getElementById('vte-depot').value;
+
+  // Vérification du stock disponible (uniquement pour les articles internes)
+  for(const l of panierVente){
+    if(!l.articleId) continue; // article hors stock : rien à vérifier
+    const a = trouverArticle(l.articleId);
+    const stk = getStockDepot(a, depotId);
+    if(l.qte > stk.qte){
+      toast("Stock insuffisant pour: "+a.designation);
+      return;
+    }
+  }
+
+  const clientId = document.getElementById('vte-client').value || null;
+  const modePaiement = document.getElementById('vte-mode').value;
+  const total = panierVente.reduce((s,l)=>s+l.qte*l.prixUnitaire,0);
+
+  if(modePaiement==='avance'){
+    if(!clientId){ toast("Choisissez un client pour payer par avance"); return; }
+    const solde = soldeAvanceClient(clientId);
+    if(total > solde){ toast("Solde avance insuffisant (disponible: "+fcfa(solde)+")"); return; }
+  }
+
+  let articles = DB.articles;
+  panierVente.forEach(l=>{
+    if(!l.articleId) return; // article hors stock : pas de sortie de notre inventaire
+    const a = articles.find(x=>x.id===l.articleId);
+    appliquerSortieStock(a, depotId, l.qte);
+  });
+  DB.articles = articles;
+
+  const vente = {id:uid(), date:dateAuj(), heure:heureMaintenant(), clientId, depotId, lignes:JSON.parse(JSON.stringify(panierVente)), total, modePaiement};
+  DB.ventes = [...DB.ventes, vente];
+
+  // Mouvement de caisse automatique (sauf si crédit ou paiement par avance déjà encaissée)
+  if(modePaiement!=='credit' && modePaiement!=='avance'){
+    DB.caisse = [...DB.caisse, {id:uid(), date:dateAuj(), heure:heureMaintenant(), type:'entree', montant:total, mode:modePaiement, description:"Vente #"+vente.id.slice(-5), refVenteId:vente.id}];
+  }
+  if(modePaiement==='avance'){
+    DB.avancesUtilisees = [...DB.avancesUtilisees, {id:uid(), date:dateAuj(), heure:heureMaintenant(), clientId, montant:total, type:'achat', description:"Consommation avance - Vente #"+vente.id.slice(-5), venteId:vente.id}];
+  }
+
+  ajouterJournal("Vente enregistrée: "+fcfa(total));
+
+  if(window.__devisEnCoursTransformation){
+    let devisListe = DB.devis;
+    const d = devisListe.find(x=>x.id===window.__devisEnCoursTransformation);
+    if(d) d.statut = 'transforme';
+    DB.devis = devisListe;
+    window.__devisEnCoursTransformation = null;
+  }
+
+  fermerModal();
+  panierVente = [];
+  naviguer('ventes');
+  toast("Vente enregistrée");
+}
+
+/* ================= TRANSFERTS ENTRE DEPOTS ================= */
+function renderTransferts(c){
+  const transferts = [...DB.transferts].sort((a,b)=> (b.date+b.heure).localeCompare(a.date+a.heure));
+  c.innerHTML = `
+    <h2 class="titre-page">Transferts entre dépôts</h2>
+    <button class="btn btn-orange" onclick="ouvrirNouveauTransfert()">🔁 Nouveau transfert</button>
+    <div class="card" style="margin-top:12px;">
+      ${transferts.length===0?`<div class="vide"><div class="empty-icon">🔁</div>Aucun transfert enregistré.</div>`:
+        transferts.map(t=>`
+        <div class="liste-item">
+          <div>
+            <div class="li-nom">${esc(trouverArticle(t.articleId)?.designation||'—')}</div>
+            <div class="li-sub">${esc(nomDepot(t.depotSource))} → ${esc(nomDepot(t.depotDest))} · ${dateAffiche(t.date)}</div>
+          </div>
+          <div class="li-val">${t.qte}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function ouvrirNouveauTransfert(){
+  if(DB.depots.length<2){ toast("Créez au moins 2 dépôts (dans Plus > Dépôts)"); return; }
+  const articles = DB.articles;
+  ouvrirModal("Nouveau transfert", `
+    <div>
+      <label>Article</label>
+      <select id="tr-article" onchange="dessinerModalTransfertMaj()">
+        ${articles.map(a=>`<option value="${a.id}">${esc(a.designation)}</option>`).join('')}
+      </select>
+      <label>Dépôt source</label>
+      <select id="tr-source" onchange="dessinerModalTransfertMaj()">
+        ${DB.depots.map(d=>`<option value="${d.id}" ${d.id===SESSION.depotActif?'selected':''}>${esc(d.nom)}</option>`).join('')}
+      </select>
+      <label>Dépôt destination</label>
+      <select id="tr-dest">
+        ${DB.depots.map(d=>`<option value="${d.id}">${esc(d.nom)}</option>`).join('')}
+      </select>
+      <label>Quantité <span id="tr-dispo" style="color:var(--texte-clair)"></span></label>
+      <input id="tr-qte" type="number" value="1">
+      <button class="btn btn-orange" onclick="validerTransfert()">✅ Transférer</button>
+    </div>
+  `);
+  setTimeout(dessinerModalTransfertMaj, 30);
+}
+function dessinerModalTransfertMaj(){
+  const artSel = document.getElementById('tr-article');
+  const srcSel = document.getElementById('tr-source');
+  const dispoEl = document.getElementById('tr-dispo');
+  if(!artSel || !srcSel || !dispoEl) return;
+  const a = trouverArticle(artSel.value);
+  const stk = getStockDepot(a, srcSel.value);
+  dispoEl.textContent = "(disponible: "+stk.qte+")";
+}
+function validerTransfert(){
+  const articleId = document.getElementById('tr-article').value;
+  const depotSource = document.getElementById('tr-source').value;
+  const depotDest = document.getElementById('tr-dest').value;
+  const qte = Number(document.getElementById('tr-qte').value)||0;
+  if(depotSource===depotDest){ toast("Choisissez deux dépôts différents"); return; }
+  if(qte<=0){ toast("Quantité invalide"); return; }
+  const a = trouverArticle(articleId);
+  const stk = getStockDepot(a, depotSource);
+  if(qte>stk.qte){ toast("Quantité disponible insuffisante"); return; }
+
+  let articles = DB.articles;
+  const article = articles.find(x=>x.id===articleId);
+  const pampSource = getStockDepot(article, depotSource).pamp;
+  appliquerSortieStock(article, depotSource, qte);
+  appliquerEntreeStock(article, depotDest, qte, pampSource); // conserve la valeur du PAMP
+  DB.articles = articles;
+
+  DB.transferts = [...DB.transferts, {id:uid(), date:dateAuj(), heure:heureMaintenant(), articleId, depotSource, depotDest, qte}];
+  ajouterJournal("Transfert: "+article.designation+" x"+qte);
+  fermerModal();
+  naviguer('transferts');
+  toast("Transfert effectué");
+}
+
+/* ================= CAISSE ================= */
+let caisseVue = "toutes";
+function renderCaisse(c){
+  const solde = calculerSoldeCaisse();
+  let mvts = [...DB.caisse].sort((a,b)=> (b.date+b.heure).localeCompare(a.date+a.heure));
+  if(caisseVue!=='toutes') mvts = mvts.filter(m=>m.mode===caisseVue);
+
+  c.innerHTML = `
+    <h2 class="titre-page">Caisse</h2>
+    <div class="grid3">
+      ${CANAUX_CAISSE.map(ch=>`<div class="stat-box"><div class="stat-val">${fcfa(solde[ch.id])}</div><div class="stat-lbl">${ch.label}</div></div>`).join('')}
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <button class="btn btn-vert" onclick="ouvrirMouvementCaisse('entree')">➕ Entrée</button>
+      <button class="btn btn-rouge" onclick="ouvrirMouvementCaisse('sortie')">➖ Sortie / Dépense</button>
+    </div>
+
+    <div class="tab-switch" style="margin-top:14px; flex-wrap:wrap;">
+      <button class="${caisseVue==='toutes'?'actif':''}" onclick="caisseVue='toutes'; naviguer('caisse')">Toutes</button>
+      ${CANAUX_CAISSE.map(ch=>`<button class="${caisseVue===ch.id?'actif':''}" onclick="caisseVue='${ch.id}'; naviguer('caisse')">${ch.label}</button>`).join('')}
+    </div>
+
+    <div class="card">
+      ${mvts.length===0?`<div class="vide"><div class="empty-icon">🧾</div>Aucun mouvement.</div>`:
+        mvts.map(m=>`
+        <div class="liste-item">
+          <div>
+            <div class="li-nom">${esc(m.description||(m.type==='entree'?'Entrée':'Sortie'))}</div>
+            <div class="li-sub">${dateAffiche(m.date)} ${m.heure} · ${labelMode(m.mode)}</div>
+          </div>
+          <div class="li-val ${m.type==='entree'?'vert':'rouge'}">${m.type==='entree'?'+':'-'}${fcfa(m.montant)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function ouvrirMouvementCaisse(type){
+  ouvrirModal(type==='entree'?"Nouvelle entrée caisse":"Nouvelle sortie / dépense", `
+    <div>
+      <label>Montant (FCFA) *</label>
+      <input id="cs-montant" type="number" placeholder="Ex: 5000">
+      <label>Mode</label>
+      <select id="cs-mode">
+        ${optionsMoyensPaiement(false)}
+      </select>
+      <label>Description</label>
+      <input id="cs-desc" placeholder="${type==='entree'?'Ex: Apport personnel':'Ex: Transport, achat carburant...'}">
+      <button class="btn ${type==='entree'?'btn-vert':'btn-rouge'}" onclick="validerMouvementCaisse('${type}')">Valider</button>
+    </div>
+  `);
+}
+function validerMouvementCaisse(type){
+  const montant = Number(document.getElementById('cs-montant').value)||0;
+  const mode = document.getElementById('cs-mode').value;
+  const description = document.getElementById('cs-desc').value.trim();
+  if(montant<=0){ toast("Montant invalide"); return; }
+  DB.caisse = [...DB.caisse, {id:uid(), date:dateAuj(), heure:heureMaintenant(), type, montant, mode, description}];
+  ajouterJournal((type==='entree'?"Entrée":"Sortie")+" caisse: "+fcfa(montant));
+  fermerModal();
+  naviguer('caisse');
+  toast("Mouvement enregistré");
+}
+
+/* ================= MENU "PLUS" ================= */
+function renderPlus(c){
+  c.innerHTML = `
+    <h2 class="titre-page">Plus</h2>
+    <div class="card">
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('tiers')"><div class="li-nom">👥 Clients & Fournisseurs</div><div>›</div></div>
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('transferts')"><div class="li-nom">🔁 Transferts entre dépôts</div><div>›</div></div>
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('creances')"><div class="li-nom">📝 Créances clients</div><div>›</div></div>
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('avances')"><div class="li-nom">💰 Avances & acomptes</div><div>›</div></div>
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('devis')"><div class="li-nom">📋 Devis</div><div>›</div></div>
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('etats')"><div class="li-nom">📊 États & Rapports</div><div>›</div></div>
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('journal')"><div class="li-nom">📜 Journal d'activité</div><div>›</div></div>
+      <div class="liste-item" style="cursor:pointer" onclick="naviguer('parametres')"><div class="li-nom">⚙️ Paramètres</div><div>›</div></div>
+    </div>
+    <div class="card">
+      <div class="card-titre">À propos</div>
+      <div style="font-size:12.5px; color:var(--texte-clair); line-height:1.6;">
+        <b>GESCOM Avenir</b> — logiciel de gestion commerciale hors-ligne.<br>
+        Toutes vos données restent sur cet appareil. Pensez à exporter une sauvegarde régulièrement (Paramètres > Sauvegarde).
+      </div>
+    </div>
+  `;
+}
+
+/* ================= PARAMETRES ================= */
+function renderParametres(c){
+  const params = DB.params;
+  c.innerHTML = `
+    <h2 class="titre-page">Paramètres</h2>
+
+    <div class="card">
+      <div class="card-titre">🏢 Entreprise</div>
+      <label>Nom de l'entreprise</label>
+      <input id="pr-nom" value="${esc(params.nomEntreprise)}">
+      <button class="btn btn-bleu" onclick="enregistrerParams()">Enregistrer</button>
+    </div>
+
+    <div class="card">
+      <div class="card-titre">📍 Dépôts <button class="btn btn-sm btn-bleu" onclick="ouvrirFormDepot()">➕ Ajouter</button></div>
+      ${DB.depots.map(d=>`
+        <div class="liste-item">
+          <div class="li-nom">${esc(d.nom)}</div>
+          <button class="btn btn-sm btn-gris" onclick="ouvrirFormDepot('${d.id}')">Modifier</button>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-titre">👤 Utilisateurs (PIN) <button class="btn btn-sm btn-bleu" onclick="ouvrirFormUser()">➕ Ajouter</button></div>
+      ${DB.users.map(u=>`
+        <div class="liste-item">
+          <div><div class="li-nom">${esc(u.nom)}</div><div class="li-sub">${u.role==='admin'?'Administrateur':'Employé'}</div></div>
+          <button class="btn btn-sm btn-gris" onclick="ouvrirFormUser('${u.id}')">Modifier</button>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-titre">💾 Sauvegarde des données</div>
+      <div style="font-size:12.5px; color:var(--texte-clair); margin-bottom:8px;">
+        Exportez un fichier de sauvegarde régulièrement pour ne rien perdre en cas de changement de téléphone.
+      </div>
+      <button class="btn btn-orange" onclick="exporterSauvegarde()">⬇️ Exporter une sauvegarde</button>
+      <label style="margin-top:12px;">Restaurer depuis un fichier</label>
+      <input type="file" id="pr-fichier-import" accept=".json" onchange="importerSauvegarde(this)">
+    </div>
+  `;
+}
+function enregistrerParams(){
+  const nomEntreprise = document.getElementById('pr-nom').value.trim() || "Mon Entreprise";
+  DB.params = {...DB.params, nomEntreprise};
+  toast("Paramètres enregistrés");
+  renderApp();
+}
+function ouvrirFormDepot(id){
+  const d = id ? trouverDepot(id) : null;
+  ouvrirModal(d?"Modifier le dépôt":"Nouveau dépôt", `
+    <div>
+      <label>Nom du dépôt *</label>
+      <input id="dp-nom" value="${d?esc(d.nom):''}" placeholder="Ex: Magasin Karpala">
+      <button class="btn btn-vert" onclick="enregistrerDepot(${d?`'${d.id}'`:'null'})">Enregistrer</button>
+    </div>
+  `);
+}
+function enregistrerDepot(id){
+  const nom = document.getElementById('dp-nom').value.trim();
+  if(!nom){ toast("Le nom est obligatoire"); return; }
+  let depots = DB.depots;
+  if(id){ depots.find(d=>d.id===id).nom = nom; }
+  else{ depots.push({id:uid(), nom}); }
+  DB.depots = depots;
+  ajouterJournal("Dépôt: "+nom);
+  fermerModal();
+  naviguer('parametres');
+  toast("Dépôt enregistré");
+}
+function ouvrirFormUser(id){
+  const u = id ? DB.users.find(x=>x.id===id) : null;
+  ouvrirModal(u?"Modifier l'utilisateur":"Nouvel utilisateur", `
+    <div>
+      <label>Nom *</label>
+      <input id="us-nom" value="${u?esc(u.nom):''}">
+      <label>Code PIN (4 chiffres) *</label>
+      <input id="us-pin" maxlength="4" value="${u?u.pin:''}" placeholder="Ex: 1234">
+      <label>Rôle</label>
+      <select id="us-role">
+        <option value="employe" ${u&&u.role==='employe'?'selected':''}>Employé</option>
+        <option value="admin" ${u&&u.role==='admin'?'selected':''}>Administrateur</option>
+      </select>
+      <div class="btn-row">
+        ${u && DB.users.length>1 ? `<button class="btn btn-rouge" onclick="supprimerUser('${u.id}')">Supprimer</button>`:''}
+        <button class="btn btn-vert" onclick="enregistrerUser(${u?`'${u.id}'`:'null'})">Enregistrer</button>
+      </div>
+    </div>
+  `);
+}
+function enregistrerUser(id){
+  const nom = document.getElementById('us-nom').value.trim();
+  const pin = document.getElementById('us-pin').value.trim();
+  const role = document.getElementById('us-role').value;
+  if(!nom || pin.length!==4 || isNaN(pin)){ toast("Nom et PIN à 4 chiffres obligatoires"); return; }
+  let users = DB.users;
+  if(users.find(u=>u.pin===pin && u.id!==id)){ toast("Ce PIN est déjà utilisé"); return; }
+  if(id){ const u=users.find(x=>x.id===id); u.nom=nom; u.pin=pin; u.role=role; }
+  else{ users.push({id:uid(), nom, pin, role}); }
+  DB.users = users;
+  fermerModal();
+  naviguer('parametres');
+  toast("Utilisateur enregistré");
+}
+function supprimerUser(id){
+  DB.users = DB.users.filter(u=>u.id!==id);
+  fermerModal();
+  naviguer('parametres');
+  toast("Utilisateur supprimé");
+}
+function exporterSauvegarde(){
+  const data = {
+    depots:DB.depots, articles:DB.articles, tiers:DB.tiers, achats:DB.achats,
+    ventes:DB.ventes, transferts:DB.transferts, caisse:DB.caisse, users:DB.users,
+    journal:DB.journal, params:DB.params, exportLe:new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = "gescom_sauvegarde_"+dateAuj()+".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  toast("Sauvegarde téléchargée");
+}
+function importerSauvegarde(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!confirm("Ceci va remplacer toutes les données actuelles. Continuer ?")) return;
+      DB.depots=data.depots||[]; DB.articles=data.articles||[]; DB.tiers=data.tiers||[];
+      DB.achats=data.achats||[]; DB.ventes=data.ventes||[]; DB.transferts=data.transferts||[];
+      DB.caisse=data.caisse||[]; DB.users=data.users||[]; DB.journal=data.journal||[];
+      DB.params=data.params||DB.params;
+      toast("Sauvegarde restaurée");
+      renderApp();
+    }catch(err){ toast("Fichier invalide"); }
+  };
+  reader.readAsText(file);
+}
+
+/* ================= ETATS / RAPPORTS ================= */
+function renderEtats(c){
+  const articles = DB.articles;
+  let valeurStock=0, qteStock=0;
+  articles.forEach(a=>{ const t=getStockTotal(a); valeurStock+=t.valeur; qteStock+=t.qte; });
+  const totalVentes = DB.ventes.reduce((s,v)=>s+v.total,0);
+  const totalAchats = DB.achats.reduce((s,x)=>s+x.total,0);
+  const creances = ventesCreditNonSoldees().reduce((s,v)=>s+resteAPayerVente(v),0);
+
+  c.innerHTML = `
+    <h2 class="titre-page">États & Rapports</h2>
+
+    <div class="card">
+      <div class="card-titre">📦 Valorisation du stock</div>
+      <div class="liste-item"><div class="li-nom">Quantité totale en stock</div><div class="li-val">${qteStock}</div></div>
+      <div class="liste-item"><div class="li-nom">Valeur totale (au PAMP)</div><div class="li-val">${fcfa(valeurStock)}</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-titre">💰 Résumé global</div>
+      <div class="liste-item"><div class="li-nom">Total des ventes</div><div class="li-val vert">${fcfa(totalVentes)}</div></div>
+      <div class="liste-item"><div class="li-nom">Total des achats</div><div class="li-val rouge">${fcfa(totalAchats)}</div></div>
+      <div class="liste-item"><div class="li-nom">Créances (ventes à crédit)</div><div class="li-val">${fcfa(creances)}</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-titre">🏆 Top 5 articles vendus (par valeur)</div>
+      ${topArticlesVendus().map(x=>`
+        <div class="liste-item"><div class="li-nom">${esc(x.nom)}</div><div class="li-val">${fcfa(x.valeur)}</div></div>
+      `).join('') || '<div class="vide">Aucune vente encore</div>'}
+    </div>
+
+    <div class="card">
+      <div class="card-titre">📍 Stock par dépôt</div>
+      ${DB.depots.map(d=>{
+        let v=0; DB.articles.forEach(a=>{ const s=getStockDepot(a,d.id); v+=s.qte*s.pamp; });
+        return `<div class="liste-item"><div class="li-nom">${esc(d.nom)}</div><div class="li-val">${fcfa(v)}</div></div>`;
+      }).join('')}
+    </div>
+  `;
+}
+function topArticlesVendus(){
+  const map = {};
+  DB.ventes.forEach(v=>v.lignes.forEach(l=>{
+    map[l.articleId] = (map[l.articleId]||0) + l.qte*l.prixUnitaire;
+  }));
+  return Object.entries(map)
+    .sort((a,b)=>b[1]-a[1]).slice(0,5)
+    .map(([id,valeur])=>({nom: trouverArticle(id)?.designation || '—', valeur}));
+}
+
+/* ================= JOURNAL D'ACTIVITE ================= */
+function renderJournalEcran(c){
+  const journal = DB.journal;
+  c.innerHTML = `
+    <h2 class="titre-page">Journal d'activité</h2>
+    <div class="card">
+      ${journal.length===0?`<div class="vide">Aucune activité enregistrée.</div>`:
+        journal.slice(0,150).map(j=>`
+        <div class="journal-item">
+          <div>${esc(j.action)}</div>
+          <div class="journal-date">${dateAffiche(j.date)} ${j.heure} · ${esc(j.utilisateur)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ================= CREANCES (suivi et règlement des ventes à crédit) ================= */
+function reglementsDeVente(venteId){
+  return DB.reglements.filter(r=>r.venteId===venteId);
+}
+function montantRegleVente(venteId){
+  return reglementsDeVente(venteId).reduce((s,r)=>s+r.montant,0);
+}
+function montantRetourVente(venteId){
+  return DB.retours.filter(r=>r.venteId===venteId).reduce((s,r)=>s+r.montant,0);
+}
+function qteRetourneeLigne(venteId, articleId){
+  return DB.retours.filter(r=>r.venteId===venteId && r.articleId===articleId).reduce((s,r)=>s+r.qte,0);
+}
+function resteAPayerVente(vente){
+  return Math.max(0, vente.total - montantRegleVente(vente.id) - montantRetourVente(vente.id));
+}
+function ventesCreditNonSoldees(){
+  return DB.ventes.filter(v=>v.modePaiement==='credit' && resteAPayerVente(v)>0);
+}
+function creancesParClient(){
+  const map = {};
+  ventesCreditNonSoldees().forEach(v=>{
+    const cle = v.clientId || "__comptoir__";
+    if(!map[cle]) map[cle] = {clientId:v.clientId, total:0, ventes:[]};
+    const reste = resteAPayerVente(v);
+    map[cle].total += reste;
+    map[cle].ventes.push({vente:v, reste});
+  });
+  return Object.values(map).sort((a,b)=>b.total-a.total);
+}
+
+function renderCreances(c){
+  const groupes = creancesParClient();
+  const totalGeneral = groupes.reduce((s,g)=>s+g.total,0);
+  c.innerHTML = `
+    <h2 class="titre-page">Créances (ventes à crédit)</h2>
+    <div class="card" style="background:var(--gris-fond)">
+      <div class="liste-item"><div class="li-nom">Total dû par les clients</div><div class="li-val rouge">${fcfa(totalGeneral)}</div></div>
+    </div>
+    <div class="card">
+      ${groupes.length===0?`<div class="vide"><div class="empty-icon">📝</div>Aucune créance en cours. 👍</div>`:
+        groupes.map(g=>`
+        <div class="liste-item" style="cursor:pointer" onclick="ouvrirDetailCreanceClient('${g.clientId||''}')">
+          <div>
+            <div class="li-nom">${g.clientId ? esc(nomTiers(g.clientId)) : "Client(s) comptoir"}</div>
+            <div class="li-sub">${g.ventes.length} vente(s) impayée(s)</div>
+          </div>
+          <div class="li-val rouge">${fcfa(g.total)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function ouvrirDetailCreanceClient(clientId){
+  const groupes = creancesParClient();
+  const g = groupes.find(x=>(x.clientId||'')===(clientId||''));
+  if(!g) return;
+  ouvrirModal(clientId?nomTiers(clientId):"Client(s) comptoir", `
+    <div>
+      ${g.ventes.map(({vente, reste})=>`
+        <div class="card" style="background:var(--gris-fond); margin-bottom:8px;">
+          <div class="liste-item">
+            <div><div class="li-nom">Vente du ${dateAffiche(vente.date)}</div><div class="li-sub">Total: ${fcfa(vente.total)} · Déjà réglé: ${fcfa(montantRegleVente(vente.id))}</div></div>
+            <div class="li-val rouge">${fcfa(reste)}</div>
+          </div>
+          <button class="btn btn-vert btn-sm" style="width:100%; margin-top:8px;" onclick="ouvrirFormReglement('${vente.id}')">💵 Enregistrer un règlement</button>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+function ouvrirFormReglement(venteId){
+  const vente = DB.ventes.find(v=>v.id===venteId);
+  const reste = resteAPayerVente(vente);
+  ouvrirModal("Règlement de créance", `
+    <div>
+      <div class="card" style="background:var(--gris-fond)">
+        <div class="liste-item"><div class="li-nom">Reste à payer</div><div class="li-val rouge">${fcfa(reste)}</div></div>
+      </div>
+      <label>Montant reçu (FCFA) *</label>
+      <input id="rg-montant" type="number" value="${reste}">
+      <label>Mode de paiement</label>
+      <select id="rg-mode">${optionsMoyensPaiement(false)}</select>
+      <button class="btn btn-vert" onclick="validerReglement('${venteId}')">✅ Enregistrer le règlement</button>
+    </div>
+  `);
+}
+function validerReglement(venteId){
+  const vente = DB.ventes.find(v=>v.id===venteId);
+  const reste = resteAPayerVente(vente);
+  const montant = Number(document.getElementById('rg-montant').value)||0;
+  const mode = document.getElementById('rg-mode').value;
+  if(montant<=0){ toast("Montant invalide"); return; }
+  if(montant>reste){ toast("Le montant dépasse le reste à payer ("+fcfa(reste)+")"); return; }
+
+  DB.reglements = [...DB.reglements, {id:uid(), date:dateAuj(), heure:heureMaintenant(), venteId, clientId:vente.clientId, montant, mode}];
+  DB.caisse = [...DB.caisse, {id:uid(), date:dateAuj(), heure:heureMaintenant(), type:'entree', montant, mode, description:"Règlement créance #"+venteId.slice(-5)}];
+  ajouterJournal("Règlement créance: "+fcfa(montant)+" ("+labelMode(mode)+")");
+  fermerModal();
+  naviguer('creances');
+  toast("Règlement enregistré");
+}
+
+/* ================= RETOURS CLIENTS ================= */
+function ouvrirRetourVente(venteId){
+  const vente = DB.ventes.find(v=>v.id===venteId);
+  const lignesDisponibles = vente.lignes.filter(l=>l.articleId).map(l=>{
+    const a = trouverArticle(l.articleId);
+    const dejaRetourne = qteRetourneeLigne(venteId, l.articleId);
+    return {...l, nom: a?a.designation:'—', maxRetour: l.qte - dejaRetourne};
+  }).filter(l=>l.maxRetour>0);
+
+  if(lignesDisponibles.length===0){ toast("Aucun article de stock interne à retourner sur cette vente"); return; }
+
+  ouvrirModal("Retour client", `
+    <div>
+      <div style="font-size:12.5px; color:var(--texte-clair); margin-bottom:8px;">Vente du ${dateAffiche(vente.date)} — sélectionnez les quantités retournées</div>
+      ${lignesDisponibles.map((l,i)=>`
+        <div class="ligne-produit">
+          <div class="lp-nom">${esc(l.nom)} <span style="color:var(--texte-clair)">(max ${l.maxRetour})</span></div>
+          <input class="lp-qte" type="number" id="ret-qte-${l.articleId}" value="0" min="0" max="${l.maxRetour}">
+          <div style="width:80px; font-size:12px; text-align:right;">${fcfa(l.prixUnitaire)}</div>
+        </div>
+      `).join('')}
+      ${vente.modePaiement==='credit'?`<div style="font-size:12.5px; color:var(--texte-clair); margin-top:10px;">Cette vente était à crédit : le retour réduira simplement le montant dû, sans sortie de caisse.</div>`
+        : vente.modePaiement==='avance'?`<div style="font-size:12.5px; color:var(--texte-clair); margin-top:10px;">Cette vente était payée par avance : le montant retourné sera recrédité sur le solde d'avance du client.</div>`
+        :`<label>Mode de remboursement</label><select id="ret-mode">${optionsMoyensPaiement(false)}</select>`}
+      <button class="btn btn-orange" onclick="validerRetour('${venteId}')">✅ Valider le retour</button>
+    </div>
+  `);
+}
+function validerRetour(venteId){
+  const vente = DB.ventes.find(v=>v.id===venteId);
+  let articles = DB.articles;
+  let retours = DB.retours;
+  let montantTotal = 0;
+  let auMoinsUn = false;
+
+  vente.lignes.forEach(l=>{
+    if(!l.articleId) return; // article hors stock : pas de retour géré ici
+    const input = document.getElementById('ret-qte-'+l.articleId);
+    if(!input) return;
+    const qte = Number(input.value)||0;
+    if(qte<=0) return;
+    const dejaRetourne = qteRetourneeLigne(venteId, l.articleId);
+    if(qte > (l.qte - dejaRetourne)){ toast("Quantité de retour trop élevée"); return; }
+    auMoinsUn = true;
+    const montant = qte * l.prixUnitaire;
+    montantTotal += montant;
+
+    const a = articles.find(x=>x.id===l.articleId);
+    const pampActuel = getStockDepot(a, vente.depotId).pamp || l.prixUnitaire;
+    appliquerEntreeStock(a, vente.depotId, qte, pampActuel);
+
+    retours.push({id:uid(), date:dateAuj(), heure:heureMaintenant(), venteId, articleId:l.articleId, qte, montant});
+  });
+
+  if(!auMoinsUn){ toast("Indiquez au moins une quantité à retourner"); return; }
+
+  DB.articles = articles;
+  DB.retours = retours;
+
+  if(vente.modePaiement==='avance'){
+    DB.avances = [...DB.avances, {id:uid(), date:dateAuj(), heure:heureMaintenant(), clientId:vente.clientId, montant:montantTotal, mode:'avance', description:"Recrédit suite retour vente #"+venteId.slice(-5)}];
+  } else if(vente.modePaiement!=='credit'){
+    const mode = document.getElementById('ret-mode').value;
+    DB.caisse = [...DB.caisse, {id:uid(), date:dateAuj(), heure:heureMaintenant(), type:'sortie', montant:montantTotal, mode, description:"Remboursement retour #"+venteId.slice(-5)}];
+  }
+
+  ajouterJournal("Retour client: "+fcfa(montantTotal));
+  fermerModal();
+  naviguer('ventes');
+  toast("Retour enregistré, stock remis à jour");
+}
+
+/* ================= RECU / TICKET ================= */
+function genererTexteRecu(vente){
+  const p = DB.params;
+  let lignes = `${p.nomEntreprise}\n`;
+  lignes += `------------------------------\n`;
+  lignes += `Date: ${dateAffiche(vente.date)} ${vente.heure}\n`;
+  lignes += `Client: ${vente.clientId?nomTiers(vente.clientId):'Comptoir'}\n`;
+  lignes += `------------------------------\n`;
+  vente.lignes.forEach(l=>{
+    let nom;
+    if(!l.articleId){ nom = (l.designationLibre||'—') + (l.fournisseur?' (fourni par '+l.fournisseur+')':''); }
+    else { const a = trouverArticle(l.articleId); nom = a?a.designation:'—'; }
+    lignes += `${nom} x${l.qte} = ${fcfa(l.qte*l.prixUnitaire)}\n`;
+  });
+  lignes += `------------------------------\n`;
+  lignes += `TOTAL: ${fcfa(vente.total)}\n`;
+  lignes += `Paiement: ${labelMode(vente.modePaiement)}\n`;
+  const reste = resteAPayerVente(vente);
+  if(vente.modePaiement==='credit' && reste>0) lignes += `Reste à payer: ${fcfa(reste)}\n`;
+  lignes += `------------------------------\n`;
+  lignes += `Merci de votre confiance !`;
+  return lignes;
+}
+function ouvrirRecu(venteId){
+  const vente = DB.ventes.find(v=>v.id===venteId);
+  const texte = genererTexteRecu(vente);
+  ouvrirModal("Reçu de vente", `
+    <div>
+      <pre style="background:var(--gris-fond); padding:12px; border-radius:8px; font-size:12.5px; white-space:pre-wrap; font-family:monospace;">${esc(texte)}</pre>
+      <div class="btn-row">
+        <button class="btn btn-bleu" onclick="imprimerRecu('${venteId}')">🖨️ Imprimer</button>
+        <button class="btn btn-vert" onclick="partagerRecuWhatsapp('${venteId}')">📤 WhatsApp</button>
+      </div>
+    </div>
+  `);
+}
+function imprimerRecu(venteId){
+  const vente = DB.ventes.find(v=>v.id===venteId);
+  const texte = genererTexteRecu(vente);
+  const w = window.open('', '_blank');
+  w.document.write(`<pre style="font-family:monospace; font-size:13px; white-space:pre-wrap;">${esc(texte)}</pre>`);
+  w.document.close();
+  w.print();
+}
+function partagerRecuWhatsapp(venteId){
+  const vente = DB.ventes.find(v=>v.id===venteId);
+  const texte = genererTexteRecu(vente);
+  const url = "https://wa.me/?text=" + encodeURIComponent(texte);
+  window.open(url, '_blank');
+}
+
+/* ================= AVANCES / ACOMPTES CLIENTS ================= */
+function soldeAvanceClient(clientId){
+  const recu = DB.avances.filter(a=>a.clientId===clientId).reduce((s,a)=>s+a.montant,0);
+  const utilise = DB.avancesUtilisees.filter(a=>a.clientId===clientId).reduce((s,a)=>s+a.montant,0);
+  return recu - utilise;
+}
+function renderAvances(c){
+  const clients = DB.tiers.filter(t=>t.type==='client');
+  const avecSolde = clients.map(cl=>({client:cl, solde:soldeAvanceClient(cl.id)})).filter(x=>x.solde>0 || DB.avances.some(a=>a.clientId===x.client.id));
+  c.innerHTML = `
+    <h2 class="titre-page">Avances & acomptes clients</h2>
+    <button class="btn btn-bleu" onclick="ouvrirFormAvance()">➕ Enregistrer une avance reçue</button>
+    <div class="card" style="margin-top:12px;">
+      ${avecSolde.length===0?`<div class="vide"><div class="empty-icon">💰</div>Aucune avance enregistrée.</div>`:
+        avecSolde.map(x=>`
+        <div class="liste-item">
+          <div style="flex:1">
+            <div class="li-nom">${esc(x.client.nom)}</div>
+            <div class="btn-row" style="margin-top:6px;">
+              <button class="btn btn-sm btn-gris" onclick="ouvrirDetailAvanceClient('${x.client.id}')">📋 Détail</button>
+              ${x.solde>0?`<button class="btn btn-sm btn-orange" onclick="ouvrirFormRemboursementAvance('${x.client.id}')">💸 Rembourser</button>`:''}
+            </div>
+          </div>
+          <div class="li-val ${x.solde>0?'vert':''}">${fcfa(x.solde)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function ouvrirDetailAvanceClient(clientId){
+  const nom = nomTiers(clientId);
+  const recus = DB.avances.filter(a=>a.clientId===clientId).map(a=>({...a, sens:'entree'}));
+  const utilises = DB.avancesUtilisees.filter(a=>a.clientId===clientId).map(a=>({...a, sens:'sortie'}));
+  const tout = [...recus, ...utilises].sort((a,b)=> (b.date+b.heure).localeCompare(a.date+a.heure));
+  const solde = soldeAvanceClient(clientId);
+  ouvrirModal("Détail avance — "+nom, `
+    <div>
+      <div class="card" style="background:var(--gris-fond); margin-bottom:10px;">
+        <div class="liste-item"><div class="li-nom">Solde actuel</div><div class="li-val ${solde>0?'vert':''}">${fcfa(solde)}</div></div>
+      </div>
+      ${tout.length===0?`<div class="vide">Aucun mouvement.</div>`:
+        tout.map(m=>`
+        <div class="liste-item">
+          <div style="flex:1">
+            <div class="li-nom">${m.sens==='entree'?'➕ Avance reçue':(m.type==='remboursement'?'💸 Remboursement':'🧾 Consommation')}</div>
+            <div class="li-sub">${dateAffiche(m.date)} ${m.heure} ${m.description?'· '+esc(m.description):''}</div>
+          </div>
+          <div class="li-val ${m.sens==='entree'?'vert':'rouge'}">${m.sens==='entree'?'+':'-'}${fcfa(m.montant)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+function ouvrirFormRemboursementAvance(clientId){
+  const solde = soldeAvanceClient(clientId);
+  if(solde<=0){ toast("Aucun solde à rembourser"); return; }
+  ouvrirModal("Rembourser le solde d'avance", `
+    <div>
+      <div style="font-size:13px; color:var(--texte-clair); margin-bottom:8px;">Client: <b>${esc(nomTiers(clientId))}</b> — Solde disponible: <b>${fcfa(solde)}</b></div>
+      <label>Montant à rembourser (FCFA) *</label>
+      <input id="rb-montant" type="number" value="${solde}" max="${solde}">
+      <label>Mode de remboursement</label>
+      <select id="rb-mode">${optionsMoyensPaiement(false)}</select>
+      <label>Note (optionnel)</label>
+      <input id="rb-note" placeholder="Ex: Solde restant après travaux">
+      <button class="btn btn-orange" onclick="validerRemboursementAvance('${clientId}')">✅ Rembourser</button>
+    </div>
+  `);
+}
+function validerRemboursementAvance(clientId){
+  const solde = soldeAvanceClient(clientId);
+  const montant = Number(document.getElementById('rb-montant').value)||0;
+  const mode = document.getElementById('rb-mode').value;
+  const note = document.getElementById('rb-note').value.trim();
+  if(montant<=0){ toast("Montant invalide"); return; }
+  if(montant>solde){ toast("Le montant dépasse le solde disponible ("+fcfa(solde)+")"); return; }
+  DB.avancesUtilisees = [...DB.avancesUtilisees, {id:uid(), date:dateAuj(), heure:heureMaintenant(), clientId, montant, type:'remboursement', description:note||"Remboursement solde avance"}];
+  DB.caisse = [...DB.caisse, {id:uid(), date:dateAuj(), heure:heureMaintenant(), type:'sortie', montant, mode, description:"Remboursement avance à "+nomTiers(clientId)}];
+  ajouterJournal("Remboursement avance: "+fcfa(montant)+" à "+nomTiers(clientId));
+  fermerModal();
+  naviguer('avances');
+  toast("Remboursement enregistré");
+}
+function ouvrirFormAvance(){
+  const clients = DB.tiers.filter(t=>t.type==='client');
+  if(clients.length===0){ toast("Créez d'abord un client (dans Tiers)"); return; }
+  ouvrirModal("Nouvelle avance reçue", `
+    <div>
+      <label>Client *</label>
+      <select id="av-client">${clients.map(cl=>`<option value="${cl.id}">${esc(cl.nom)}</option>`).join('')}</select>
+      <label>Montant reçu (FCFA) *</label>
+      <input id="av-montant" type="number" placeholder="Ex: 20000">
+      <label>Mode de réception</label>
+      <select id="av-mode">${optionsMoyensPaiement(false)}</select>
+      <label>Note (optionnel)</label>
+      <input id="av-note" placeholder="Ex: Acompte commande fer à béton">
+      <button class="btn btn-vert" onclick="validerAvance()">✅ Enregistrer</button>
+    </div>
+  `);
+}
+function validerAvance(){
+  const clientId = document.getElementById('av-client').value;
+  const montant = Number(document.getElementById('av-montant').value)||0;
+  const mode = document.getElementById('av-mode').value;
+  const note = document.getElementById('av-note').value.trim();
+  if(montant<=0){ toast("Montant invalide"); return; }
+  DB.avances = [...DB.avances, {id:uid(), date:dateAuj(), heure:heureMaintenant(), clientId, montant, mode, description:note}];
+  DB.caisse = [...DB.caisse, {id:uid(), date:dateAuj(), heure:heureMaintenant(), type:'entree', montant, mode, description:"Avance reçue de "+nomTiers(clientId)}];
+  ajouterJournal("Avance reçue: "+fcfa(montant)+" de "+nomTiers(clientId));
+  fermerModal();
+  naviguer('avances');
+  toast("Avance enregistrée");
+}
+
+/* ================= DEVIS ================= */
+let panierDevis = [];
+function renderDevisEcran(c){
+  const devis = [...DB.devis].sort((a,b)=> (b.date+b.heure).localeCompare(a.date+a.heure));
+  c.innerHTML = `
+    <h2 class="titre-page">Devis</h2>
+    <button class="btn btn-bleu" onclick="ouvrirNouveauDevis()">➕ Nouveau devis</button>
+    <div class="card" style="margin-top:12px;">
+      ${devis.length===0?`<div class="vide"><div class="empty-icon">📋</div>Aucun devis enregistré.</div>`:
+        devis.map(d=>`
+        <div class="liste-item">
+          <div style="flex:1">
+            <div class="li-nom">${d.clientId?esc(nomTiers(d.clientId)):'Client comptoir'} <span class="pill ${d.statut==='transforme'?'pill-vert':(d.statut==='annule'?'pill-rouge':'pill-orange')}">${d.statut==='transforme'?'Transformé':(d.statut==='annule'?'Annulé':'En attente')}</span></div>
+            <div class="li-sub">${dateAffiche(d.date)} · ${d.lignes.length} article(s)</div>
+            ${d.statut==='en_attente'?`<button class="btn btn-sm btn-vert" style="margin-top:6px;" onclick="transformerDevisEnVente('${d.id}')">✅ Transformer en vente</button>`:''}
+          </div>
+          <div class="li-val">${fcfa(d.total)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+function ouvrirNouveauDevis(){
+  panierDevis = [];
+  dessinerModalDevis();
+}
+function dessinerModalDevis(){
+  const clients = DB.tiers.filter(t=>t.type==='client');
+  const articles = DB.articles;
+  const total = panierDevis.reduce((s,l)=>s+l.qte*l.prixUnitaire,0);
+  ouvrirModal("Nouveau devis", `
+    <div>
+      <label>Client</label>
+      <select id="dv-client">
+        <option value="">— Client comptoir —</option>
+        ${clients.map(cl=>`<option value="${cl.id}">${esc(cl.nom)}</option>`).join('')}
+      </select>
+      <label>Ajouter un article</label>
+      <select id="dv-select-article" onchange="ajouterLigneDevis()">
+        <option value="">— Choisir un article —</option>
+        ${articles.map(a=>`<option value="${a.id}">${esc(a.designation)}</option>`).join('')}
+      </select>
+      <div id="dv-lignes" style="margin-top:10px;">
+        ${panierDevis.map((l,i)=>{
+          const a = trouverArticle(l.articleId);
+          return `
+          <div class="ligne-produit">
+            <div class="lp-nom">${esc(a.designation)}</div>
+            <input class="lp-qte" type="number" value="${l.qte}" onchange="maj_qte_devis(${i}, this.value)" placeholder="Qté">
+            <input class="lp-prix" type="number" value="${l.prixUnitaire}" onchange="maj_prix_devis(${i}, this.value)" placeholder="Prix U.">
+            <button class="lp-suppr" onclick="suppr_ligne_devis(${i})">✕</button>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card" style="margin-top:10px; background:var(--gris-fond)">
+        <div class="liste-item"><div class="li-nom">Total devis</div><div class="li-val">${fcfa(total)}</div></div>
+      </div>
+      <button class="btn btn-bleu" onclick="validerDevis()">✅ Enregistrer le devis</button>
+    </div>
+  `);
+}
+function ajouterLigneDevis(){
+  const sel = document.getElementById('dv-select-article');
+  const id = sel.value;
+  if(!id) return;
+  const a = trouverArticle(id);
+  if(panierDevis.find(l=>l.articleId===id)){ toast("Déjà dans la liste"); sel.value=""; return; }
+  panierDevis.push({articleId:id, qte:1, prixUnitaire:a.prixVente||0});
+  sel.value="";
+  dessinerModalDevis();
+}
+function maj_qte_devis(i,v){ panierDevis[i].qte = Number(v)||0; dessinerModalDevis(); }
+function maj_prix_devis(i,v){ panierDevis[i].prixUnitaire = Number(v)||0; dessinerModalDevis(); }
+function suppr_ligne_devis(i){ panierDevis.splice(i,1); dessinerModalDevis(); }
+function validerDevis(){
+  if(panierDevis.length===0){ toast("Ajoutez au moins un article"); return; }
+  const clientId = document.getElementById('dv-client').value || null;
+  const total = panierDevis.reduce((s,l)=>s+l.qte*l.prixUnitaire,0);
+  const devis = {id:uid(), date:dateAuj(), heure:heureMaintenant(), clientId, lignes:JSON.parse(JSON.stringify(panierDevis)), total, statut:'en_attente'};
+  DB.devis = [...DB.devis, devis];
+  ajouterJournal("Devis créé: "+fcfa(total));
+  fermerModal();
+  panierDevis = [];
+  naviguer('devis');
+  toast("Devis enregistré");
+}
+function transformerDevisEnVente(devisId){
+  const devis = DB.devis.find(d=>d.id===devisId);
+  panierVente = JSON.parse(JSON.stringify(devis.lignes));
+  dessinerModalVente();
+  setTimeout(()=>{
+    const clSel = document.getElementById('vte-client');
+    if(clSel && devis.clientId) clSel.value = devis.clientId;
+  }, 30);
+  // Marquer transformé une fois la vente validée : on le fait via un flag temporaire
+  window.__devisEnCoursTransformation = devisId;
+}
+
+/* ================= DEMARRAGE ================= */
+initDonneesBase();
+if(SESSION.user){ renderApp(); } else { renderLogin(); }
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
