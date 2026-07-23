@@ -1993,5 +1993,18 @@ function transformerDevisEnVente(devisId){
 initDonneesBase();
 if(SESSION.user){ renderApp(); } else { renderLogin(); }
 </script>
+  <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(reg) {
+        console.log('Service Worker enregistré:', reg.scope);
+      })
+      .catch(function(err) {
+        console.log('Erreur Service Worker:', err);
+      });
+  });
+}
+</script>
 </body>
 </html>
